@@ -4,7 +4,7 @@
   "description": "A server for the prompt engineer MCP",
   "main": "index.ts",
   "scripts": {
-    "start": "ts-node index.ts"
+    "start": "node --loader ts-node/esm index.ts"
   },
   "type": "module",
   "dependencies": {
@@ -12,5 +12,9 @@
     "@langchain/core": "^0.3.42",
     "@modelcontextprotocol/sdk": "^1.7.0",
     "langchain": "^0.3.19"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
   }
 }
