@@ -7,6 +7,16 @@ import {
   ListToolsRequestSchema,
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
+import { ChatAnthropic } from "@langchain/anthropic";
+import { StringOutputParser } from "@langchain/core/output_parsers";
+import { SystemMessage, HumanMessage } from "@langchain/core/messages";
+
+// Using explicit declaration for Node.js process with environment variables
+declare const process: {
+  exit: (code: number) => never;
+  stderr: { write: (message: string) => void };
+  env: Record<string, string | undefined>;
+};
 
 const PROMPT_FORMAT_TOOL: Tool = {
   name: "format_cursor_prompt",
@@ -64,75 +74,50 @@ function isPromptFormatArgs(args: unknown): args is {
 async function formatCursorPrompt(prompt: string, taskType: string = "code_generation", language: string = "typescript") {
   console.error(`Formatting prompt for task type: ${taskType} in ${language}`);
   
-  // Begin with a standard structure
-  let formattedPrompt = "";
-  
-  // Add task-specific formatting
-  switch (taskType) {
-    case "code_generation":
-      formattedPrompt = `# Task: Generate Code
-## Language: ${language}
-## Requirements:
-${prompt}
-
-## Expected Output:
-- Clean, well-structured ${language} code
-- Include appropriate error handling
-- Follow best practices for ${language}`;
-      break;
-      
-    case "debugging":
-      formattedPrompt = `# Task: Debug Code Issue
-## Language: ${language}
-## Problem Description:
-${prompt}
-
-## Expected Output:
-- Identify the root cause of the bug
-- Provide a working solution
-- Explain why the bug occurred`;
-      break;
-      
-    case "refactoring":
-      formattedPrompt = `# Task: Refactor Code
-## Language: ${language}
-## Current Code and Refactoring Goals:
-${prompt}
-
-## Expected Output:
-- Refactored version that improves:
-  - Readability
-  - Performance
-  - Maintainability
-- Brief explanation of key improvements`;
-      break;
-      
-    case "explanation":
-      formattedPrompt = `# Task: Explain Code
-## Language: ${language}
-## Code to Explain:
-${prompt}
-
-## Expected Output:
-- Clear explanation of code functionality
-- Breakdown of complex parts
-- Any potential issues or optimization opportunities`;
-      break;
-      
-    default:
-      // General formatting for other types
-      formattedPrompt = `# Task: ${taskType.charAt(0).toUpperCase() + taskType.slice(1)}
+  // Check if API key is available
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error("ANTHROPIC_API_KEY environment variable is not set. Using fallback formatting.");
+    // Fallback to basic formatting when API key is not available
+    return `# Task: ${taskType.charAt(0).toUpperCase() + taskType.slice(1)}
 ## Language: ${language}
 ## Details:
 ${prompt}
 
 ## Expected Output:
-- Comprehensive solution
-- Well-structured response
-- Focus on quality and correctness`;
+- Clean, well-structured ${language} code
+- Following best practices and conventions
+- Properly documented and maintainable`;
   }
   
-  return formattedPrompt;
+  // Initialize Anthropic model
+  const model = new ChatAnthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+    temperature: 0.2, // Low temperature for more consistent, structured output
+    modelName: "claude-3-haiku-20240307", // Using a fast, cost-effective model
+  });
+  
+  // Create the system prompt for Claude
+  const systemPromptText = `You are an expert prompt engineer specializing in creating optimal prompts for code-related AI tasks.
+Your job is to take a user's raw prompt and transform it into a well-structured, detailed prompt that will get the best results from Cursor AI.
+
+For a ${taskType} task in ${language}, format the prompt to:
+1. Be clear and specific about requirements
+2. Include relevant context
+3. Structure the prompt with appropriate headers and sections
+4. Specify expected outputs
+5. Include any coding best practices or constraints that should be followed
+
+Your output should ONLY be the formatted prompt with no additional commentary, explanations, or metadata.`;
+
+  // Create message objects
+  const systemMessage = new SystemMessage(systemPromptText);
+  const userMessage = new HumanMessage(`Here is my raw prompt for a ${taskType} task in ${language}:\n\n${prompt}\n\nPlease format this into an optimal prompt for Cursor AI.`);
+  
+  // Call the model with the messages
+  const response = await model.invoke([systemMessage, userMessage]);
+  
+  // Return the formatted prompt
+  return response.content;
 }
 
 // Tool handlers
@@ -185,12 +170,6 @@ async function runServer() {
   await server.connect(transport);
   console.error("Cursor Prompt Formatter MCP Server running on stdio");
 }
-
-// Using explicit declaration for Node.js process
-declare const process: {
-  exit: (code: number) => never;
-  stderr: { write: (message: string) => void };
-};
 
 runServer().catch((error) => {
   console.error("Fatal error running server:", error);

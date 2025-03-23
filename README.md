@@ -1,6 +1,64 @@
-# Cursor Prompt Engineer MCP Server
+# Cursor Prompt Formatter MCP Server
 
-An MCP server implementation that engineers prompts to get better results from Cursor AI.
+This Model Context Protocol (MCP) server provides a tool to format prompts for optimal results with Cursor AI, using Claude by Anthropic.
+
+## Installation
+
+```bash
+npm install
+```
+
+## Usage
+
+### Setting Environment Variables
+
+The server requires an Anthropic API key to use Claude for formatting. Set it as an environment variable:
+
+```bash
+export ANTHROPIC_API_KEY=your_anthropic_api_key
+```
+
+If no API key is provided, the server will fall back to a basic formatting template.
+
+### Running the Server
+
+```bash
+npm start
+```
+
+## Tool: format_cursor_prompt
+
+This tool takes a raw prompt and formats it for optimal results with Cursor AI.
+
+### Parameters
+
+- `prompt` (required): The raw prompt text that needs formatting
+- `task_type` (optional): Type of task (code_generation, debugging, refactoring, explanation, other)
+- `language` (optional): Target programming language (default: typescript)
+
+### Example Usage
+
+```json
+{
+  "name": "format_cursor_prompt",
+  "arguments": {
+    "prompt": "Create a function to convert temperature between Celsius and Fahrenheit",
+    "task_type": "code_generation",
+    "language": "typescript"
+  }
+}
+```
+
+## How It Works
+
+The server uses Claude by Anthropic via LangChain to intelligently reformat your prompt for better results. It enhances your prompt by:
+
+1. Adding clear structure with appropriate headers
+2. Specifying expected outputs and requirements
+3. Including language-specific best practices
+4. Clarifying context and constraints
+
+If no Anthropic API key is available, it falls back to a simple template-based formatter.
 
 ## Features
 

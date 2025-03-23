@@ -1,13 +1,16 @@
 {
-  "name": "prompts-mcp-server",
+  "name": "prompt-engineer-mcp-server",
   "version": "1.0.0",
-  "description": "A server for the prompts MCP",
+  "description": "A server for the prompt engineer MCP",
   "main": "index.ts",
   "scripts": {
     "start": "ts-node index.ts"
   },
   "type": "module",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.7.0"
+    "@langchain/anthropic": "^0.3.15",
+    "@langchain/core": "^0.3.42",
+    "@modelcontextprotocol/sdk": "^1.7.0",
+    "langchain": "^0.3.19"
   }
 }
