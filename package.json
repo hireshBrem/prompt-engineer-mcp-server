@@ -1,0 +1,13 @@
+{
+  "name": "prompts-mcp-server",
+  "version": "1.0.0",
+  "description": "A server for the prompts MCP",
+  "main": "index.ts",
+  "scripts": {
+    "start": "ts-node index.ts"
+  },
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.7.0"
+  }
+}
