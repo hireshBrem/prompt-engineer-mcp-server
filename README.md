@@ -8,6 +8,11 @@ This Model Context Protocol (MCP) server provides a tool to format prompts for o
 npm install
 ```
 
+### Install via Smithery
+
+You can install this MCP server directly through Smithery by visiting:
+https://smithery.ai/server/@hireshBrem/prompt-engineer-mcp-server
+
 ## Usage
 
 ### Setting Environment Variables

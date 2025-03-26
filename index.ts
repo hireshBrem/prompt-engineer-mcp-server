@@ -18,37 +18,26 @@ declare const process: {
   env: Record<string, string | undefined>;
 };
 
-const PROMPT_FORMAT_TOOL: Tool = {
-  name: "format_cursor_prompt",
-  description: "Formats prompts to get the best results from Cursor AI.",
+const REWRITE_CODING_PROMPT_TOOL: Tool = {
+  name: "rewrite_coding_prompt",
+  description: "Rewrites user's coding prompts before passing to AI IDE (e.g. Cursor AI) to get the best results from AI IDE.",
   inputSchema: {
     type: "object",
     properties: {
       prompt: {
         type: "string",
-        description: "The raw prompt that needs formatting"
-      },
-      task_type: {
-        type: "string",
-        description: "Type of task (code generation, debugging, refactoring, etc.)",
-        enum: ["code_generation", "debugging", "refactoring", "explanation", "other"],
-        default: "code_generation"
-      },
-      language: {
-        type: "string",
-        description: "Target programming language",
-        default: "typescript"
+        description: "The raw user's prompt that needs rewriting"
       }
     },
     required: ["prompt"],
-    title: "format_cursor_promptArguments"
+    title: "rewrite_coding_promptArguments"
   }
 };
 
 // Server implementation
 const server = new Server(
   {
-    name: "cursor-prompt-formatter",
+    name: "coding-prompt-engineer",
     version: "0.1.0",
   },
   {
@@ -60,8 +49,6 @@ const server = new Server(
 
 function isPromptFormatArgs(args: unknown): args is { 
   prompt: string; 
-  task_type?: string;
-  language?: string;
 } {
   return (
     typeof args === "object" &&
@@ -71,7 +58,7 @@ function isPromptFormatArgs(args: unknown): args is {
   );
 }
 
-async function formatCursorPrompt(prompt: string, language: string = "typescript") {
+async function rewriteCodingPrompt(prompt: string, language: string = "typescript") {
   // Check if API key is available
   if (!process.env.ANTHROPIC_API_KEY) {
     throw new Error("ANTHROPIC_API_KEY environment variable is not set. Using fallback formatting.");
@@ -108,7 +95,7 @@ Your output should ONLY be the edited prompt that will get the best results from
 
 // Tool handlers
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [PROMPT_FORMAT_TOOL],
+  tools: [REWRITE_CODING_PROMPT_TOOL],  
 }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -120,14 +107,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     switch (name) {
-      case "format_cursor_prompt": {
+      case "rewrite_coding_prompt": {
         if (!isPromptFormatArgs(args)) {
-          throw new Error("Invalid arguments for format_cursor_prompt");
+          throw new Error("Invalid arguments for rewrite_coding_prompt");
         }
-        const { prompt, task_type = "code_generation", language = "typescript" } = args;
-        const formattedPrompt = await formatCursorPrompt(prompt, language);
+        const { prompt } = args;
+        const rewrittenPrompt = await rewriteCodingPrompt(prompt);
         return {
-          content: [{ type: "text", text: formattedPrompt }],
+          content: [{ type: "text", text: rewrittenPrompt }],
           isError: false,
         };
       }
