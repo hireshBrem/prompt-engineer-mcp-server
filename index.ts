@@ -27,9 +27,13 @@ const REWRITE_CODING_PROMPT_TOOL: Tool = {
       prompt: {
         type: "string",
         description: "The raw user's prompt that needs rewriting"
+      },
+      language: {
+        type: "string",
+        description: "The programming language of the code"
       }
     },
-    required: ["prompt"],
+    required: ["prompt", "language"],
     title: "rewrite_coding_promptArguments"
   }
 };
@@ -49,12 +53,15 @@ const server = new Server(
 
 function isPromptFormatArgs(args: unknown): args is { 
   prompt: string; 
+  language: string;
 } {
   return (
     typeof args === "object" &&
     args !== null &&
     "prompt" in args &&
-    typeof (args as { prompt: string }).prompt === "string"
+    typeof (args as { prompt: string }).prompt === "string" &&
+    "language" in args &&
+    typeof (args as { language: string }).language === "string"
   );
 }
 
@@ -79,7 +86,7 @@ Your output should ONLY be the edited prompt that will get the best results from
 
   // Create message objects
   const systemMessage = new SystemMessage(systemPromptText);
-  const userMessage = new HumanMessage(`Here is my raw prompt: \n\n${prompt}\n\nPlease format this into an optimal prompt for Cursor AI.`);
+  const userMessage = new HumanMessage(`Here is my raw prompt: \n\n${prompt}\n\nPlease format this into an optimal prompt for Cursor AI. The programming language is ${language}.`);
   
   // Call the model with the messages
   const response = await model.invoke([systemMessage, userMessage]);
@@ -111,8 +118,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!isPromptFormatArgs(args)) {
           throw new Error("Invalid arguments for rewrite_coding_prompt");
         }
-        const { prompt } = args;
-        const rewrittenPrompt = await rewriteCodingPrompt(prompt);
+        const { prompt, language } = args;
+        const rewrittenPrompt = await rewriteCodingPrompt(prompt, language);
         return {
           content: [{ type: "text", text: rewrittenPrompt }],
           isError: false,
