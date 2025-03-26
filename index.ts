@@ -71,51 +71,37 @@ function isPromptFormatArgs(args: unknown): args is {
   );
 }
 
-async function formatCursorPrompt(prompt: string, taskType: string = "code_generation", language: string = "typescript") {
-  console.error(`Formatting prompt for task type: ${taskType} in ${language}`);
-  
+async function formatCursorPrompt(prompt: string, language: string = "typescript") {
   // Check if API key is available
   if (!process.env.ANTHROPIC_API_KEY) {
-    console.error("ANTHROPIC_API_KEY environment variable is not set. Using fallback formatting.");
-    // Fallback to basic formatting when API key is not available
-    return `# Task: ${taskType.charAt(0).toUpperCase() + taskType.slice(1)}
-## Language: ${language}
-## Details:
-${prompt}
-
-## Expected Output:
-- Clean, well-structured ${language} code
-- Following best practices and conventions
-- Properly documented and maintainable`;
+    throw new Error("ANTHROPIC_API_KEY environment variable is not set. Using fallback formatting.");
   }
   
   // Initialize Anthropic model
   const model = new ChatAnthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
     temperature: 0.2, // Low temperature for more consistent, structured output
-    modelName: "claude-3-haiku-20240307", // Using a fast, cost-effective model
+    modelName: "claude-3-7-sonnet-20250219", // Using a fast, cost-effective model
   });
   
   // Create the system prompt for Claude
   const systemPromptText = `You are an expert prompt engineer specializing in creating optimal prompts for code-related AI tasks.
-Your job is to take a user's raw prompt and transform it into a well-structured, detailed prompt that will get the best results from Cursor AI.
+Your job is to take a user's raw Cursor AI's prompt and transform it into a well-structured, detailed prompt that will get the best results from Cursor AI.
 
-For a ${taskType} task in ${language}, format the prompt to:
-1. Be clear and specific about requirements
-2. Include relevant context
-3. Structure the prompt with appropriate headers and sections
-4. Specify expected outputs
-5. Include any coding best practices or constraints that should be followed
-
-Your output should ONLY be the formatted prompt with no additional commentary, explanations, or metadata.`;
+Your output should ONLY be the edited prompt that will get the best results from Cursor AI or any IDEwith no additional commentary, explanations, or metadata.`;
 
   // Create message objects
   const systemMessage = new SystemMessage(systemPromptText);
-  const userMessage = new HumanMessage(`Here is my raw prompt for a ${taskType} task in ${language}:\n\n${prompt}\n\nPlease format this into an optimal prompt for Cursor AI.`);
+  const userMessage = new HumanMessage(`Here is my raw prompt: \n\n${prompt}\n\nPlease format this into an optimal prompt for Cursor AI.`);
   
   // Call the model with the messages
   const response = await model.invoke([systemMessage, userMessage]);
   
+  // Ensure we have a valid response
+  if (!response || typeof response.content !== 'string') {
+    throw new Error('Invalid response from Claude API');
+  }
+
   // Return the formatted prompt
   return response.content;
 }
@@ -139,7 +125,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           throw new Error("Invalid arguments for format_cursor_prompt");
         }
         const { prompt, task_type = "code_generation", language = "typescript" } = args;
-        const formattedPrompt = await formatCursorPrompt(prompt, task_type, language);
+        const formattedPrompt = await formatCursorPrompt(prompt, language);
         return {
           content: [{ type: "text", text: formattedPrompt }],
           isError: false,

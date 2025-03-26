@@ -26,6 +26,11 @@ If no API key is provided, the server will fall back to a basic formatting templ
 npm start
 ```
 
+Or with MCP Inspector:
+```bash
+npx @modelcontextprotocol/inspector npm start
+```
+
 ## Tool: format_cursor_prompt
 
 This tool takes a raw prompt and formats it for optimal results with Cursor AI.
