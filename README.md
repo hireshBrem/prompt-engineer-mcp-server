@@ -1,9 +1,20 @@
 # Cursor Prompt Formatter MCP Server
 
+[![smithery badge](https://smithery.ai/badge/@hireshBrem/cursor-prompt-formatter-server)](https://smithery.ai/server/@hireshBrem/cursor-prompt-formatter-server)
+
 This Model Context Protocol (MCP) server provides a tool to format prompts for optimal results with Cursor AI, using Claude by Anthropic.
 
 ## Installation
 
+### Installing via Smithery
+
+To install cursor-prompt-formatter-server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@hireshBrem/cursor-prompt-formatter-server):
+
+```bash
+npx -y @smithery/cli install @hireshBrem/cursor-prompt-formatter-server --client claude
+```
+
+### Manual Installation
 ```bash
 npm install
 ```
