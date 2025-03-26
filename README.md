@@ -1,6 +1,6 @@
 # Cursor Prompt Formatter MCP Server
 
-This Model Context Protocol (MCP) server provides a tool to format prompts for optimal results with Cursor AI, using Claude by Anthropic.
+This Model Context Protocol (MCP) server provides a tool to rewrite coding prompts for optimal results with Cursor AI and other AI IDEs, using Claude by Anthropic.
 
 ## Installation
 
@@ -23,7 +23,7 @@ The server requires an Anthropic API key to use Claude for formatting. Set it as
 export ANTHROPIC_API_KEY=your_anthropic_api_key
 ```
 
-If no API key is provided, the server will fall back to a basic formatting template.
+If no API key is provided, the server will throw an error indicating the missing API key.
 
 ### Running the Server
 
@@ -36,24 +36,22 @@ Or with MCP Inspector:
 npx @modelcontextprotocol/inspector npm start
 ```
 
-## Tool: format_cursor_prompt
+## Tool: rewrite_coding_prompt
 
-This tool takes a raw prompt and formats it for optimal results with Cursor AI.
+This tool takes a raw prompt and rewrites it for optimal results with Cursor AI and other AI IDEs.
 
 ### Parameters
 
-- `prompt` (required): The raw prompt text that needs formatting
-- `task_type` (optional): Type of task (code_generation, debugging, refactoring, explanation, other)
-- `language` (optional): Target programming language (default: typescript)
+- `prompt` (required): The raw user's prompt that needs rewriting
+- `language` (required): The programming language of the code
 
 ### Example Usage
 
 ```json
 {
-  "name": "format_cursor_prompt",
+  "name": "rewrite_coding_prompt",
   "arguments": {
     "prompt": "Create a function to convert temperature between Celsius and Fahrenheit",
-    "task_type": "code_generation",
     "language": "typescript"
   }
 }
@@ -61,30 +59,19 @@ This tool takes a raw prompt and formats it for optimal results with Cursor AI.
 
 ## How It Works
 
-The server uses Claude by Anthropic via LangChain to intelligently reformat your prompt for better results. It enhances your prompt by:
+The server uses Claude 3 Sonnet by Anthropic to intelligently rewrite your prompts for better results. It enhances your prompt by:
 
-1. Adding clear structure with appropriate headers
-2. Specifying expected outputs and requirements
-3. Including language-specific best practices
-4. Clarifying context and constraints
-
-If no Anthropic API key is available, it falls back to a simple template-based formatter.
+1. Adding clear structure and context
+2. Specifying requirements and expectations
+3. Including language-specific considerations
+4. Optimizing for AI IDE understanding
 
 ## Features
 
-- **Structured Prompt Engineering**: Automatically structures prompts for optimal results
-- **Task-Specific Templates**: Specialized formats for code generation, debugging, refactoring, and explanations
+- **Intelligent Prompt Engineering**: Uses Claude 3 Sonnet to rewrite prompts for optimal results
 - **Language-Aware**: Customizes prompts based on target programming language
-- **Easy Integration**: Works seamlessly with Cursor and Claude Desktop
-
-## Tools
-
-- **format_cursor_prompt**
-  - Engineers raw prompts into structured templates for better results
-  - Inputs:
-    - `prompt` (string): The raw prompt that needs engineering
-    - `task_type` (string, optional): Type of task (code_generation, debugging, refactoring, explanation, other)
-    - `language` (string, optional): Target programming language
+- **Easy Integration**: Works seamlessly with Cursor and other AI IDEs
+- **Low Temperature Setting**: Uses 0.2 temperature for consistent, structured output
 
 ## Configuration
 
@@ -128,18 +115,15 @@ Input:
 Create a function that sorts an array of objects by a specific property
 ```
 
-Output:
+With arguments:
+```json
+{
+  "prompt": "Create a function that sorts an array of objects by a specific property",
+  "language": "typescript"
+}
 ```
-# Task: Generate Code
-## Language: typescript
-## Requirements:
-Create a function that sorts an array of objects by a specific property
 
-## Expected Output:
-- Clean, well-structured typescript code
-- Include appropriate error handling
-- Follow best practices for typescript
-```
+The tool will rewrite the prompt to be more structured and detailed for optimal results with your AI IDE.
 
 ## License
 
