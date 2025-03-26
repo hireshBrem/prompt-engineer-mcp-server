@@ -1,4 +1,4 @@
-# Cursor Prompt Formatter MCP Server
+# Coding Prompt Engineer MCP Server
 
 This Model Context Protocol (MCP) server provides a tool to rewrite coding prompts for optimal results with Cursor AI and other AI IDEs, using Claude by Anthropic.
 
